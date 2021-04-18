@@ -1,0 +1,100 @@
+﻿@model IEnumerable<AGENDA_BR.Models.Pessoa>
+
+@{
+    ViewData["Title"] = "AGENDA";
+}
+@* Botão para cadastrar novo contato encontrado no cato superior direito. *@
+<div class="alert alert-dark row align-content-center">
+    <div class="col-10 align-content-start">
+        <h6>@Model.Count() Contato's' cadastrado's'</h6>
+    </div>
+    <div class="col-2 align-content-end">
+        <a asp-action="AdicionarPessoa" class="btn btn-sm btn-outline-dark">Novo Contato</a>
+    </div>
+</div>
+
+@*  *@
+<div>
+    @if (TempData["ContatoNovo"] != null)
+    {
+        <p class="alert alert-success">@TempData["ContatoNovo"].ToString()</p>}
+    @if (TempData["ContatoAtualizado"] != null)
+    {
+        <p class="alert alert-primary">@TempData["ContatoAtualizado"].ToString()</p>}
+    @if (TempData["ContatoExcluido"] != null)
+    {
+        <p class="alert alert-danger">@TempData["ContatoExcluido"].ToString()</p>}
+</div>
+
+@* Parte do código destinada a exibição do card do contato adicionado, com foto, nome,sobrenome e as demais informações. Utilizando um for para percorrer... *@
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="card">
+            <img src="@Url.Content(item.Foto)" class="card-img-top" height="350" />
+            <div class="card-title">
+                <div class="row">
+                    <div class="col-9 align-content-start">
+                        <h5>@item.Nome  @item.Sobrenome - @item.Idade anos </h5>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="AtualizarPessoa" asp-route-pessoaID="@item.PessoaID" class="btn btn-sm btn-outline-primary">Atualizar</a> |
+                    <a class="btn btn-sm btn-outline-danger" onclick="ConfirmarExclusao(@item.PessoaID, '@item.Nome')">Excluir</a>
+                </div>
+                <div class="card-text">
+                    <h6 class="badge badge-info">@item.Telefone</h6>
+                    <p class="badge badge-warning">@item.Email</p>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+@* Parte do código destinada a confirmação de caso opte por excluir o contato *@
+<div class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmação de exclusão</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Prosseguir com a exclusão do contato <text class="nomeContato"></text> ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btnFechar" data-dismiss="modal">Não</button>
+                <button type="button" class="btn btn-outline-danger btnExcluir" data-dismiss="modal">Sim</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Script que realiza a função de exclusão do contato da agenda, atraves do PessoasController...*@
+@section Scripts {
+    <script>
+        function ConfirmarExclusao(pessoaId, nomeContato) {
+            $(".nomeContato").text(nomeContato);
+            $(".modal").modal();
+
+            $(".btnExcluir").on('click', function () {
+                $.ajax({
+                    url: 'Pessoas/ExcluirPessoa',
+                    method: 'POST',
+                    data: { pessoaId: pessoaId },
+                    success: function (data) {
+                        location.reload(true);
+                    }
+                });
+            });
+
+            $(".btnFechar").on('click', function () {
+                pessoaId = null;
+                nomeContato = null;
+                $(".modal").modal('hide');
+            })
+        }
+    </script>
+}
